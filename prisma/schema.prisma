@@ -1,0 +1,142 @@
+// -----------------------------------------------------------------------------
+// Trading Journal � Prisma Schema
+// -----------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// --- Enums --------------------------------------------------------------------
+
+enum Direction {
+  Buy
+  Sell
+}
+
+enum Session {
+  Asia
+  London
+  NewYork
+}
+
+enum Emotion {
+  Confident
+  Calm
+  Excited
+  Fearful
+  Greedy
+  Revenge
+  Impatient
+  Relieved
+  Frustrated
+  Neutral
+  FOMO
+  Disciplined
+}
+
+// --- User --------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trades Trade[]
+}
+
+// --- Trade -------------------------------------------------------------------
+
+model Trade {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  instrument String
+  direction  Direction
+  lotSize    Float
+  session    Session?
+
+  entryDate  DateTime
+  exitDate   DateTime?
+
+  entryPrice Float
+  exitPrice  Float?
+  stopLoss   Float?
+  takeProfit Float?
+
+  netPnl     Float?
+  fees       Float?    @default(0)
+  swap       Float?    @default(0)
+
+  riskR      Float?
+  returnR    Float?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // Relations
+  legs        TradeLeg[]
+  reflection  TradeReflection?
+  charts      TradeCharts?
+}
+
+// --- TradeLeg (Split Orders) -------------------------------------------------
+
+model TradeLeg {
+  id         String  @id @default(cuid())
+  tradeId    String
+  trade      Trade   @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  order      Int           // 1-based position index
+  lotSize    Float
+  entryPrice Float
+  exitPrice  Float?
+  stopLoss   Float?
+  takeProfit Float?
+
+  @@index([tradeId])
+}
+
+// --- TradeReflection ---------------------------------------------------------
+
+model TradeReflection {
+  id                String   @id @default(cuid())
+  tradeId           String   @unique
+  trade             Trade    @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  planFollowed      Boolean  @default(false)
+  intendedPlan      String?
+
+  entryConfluences  String[] // e.g. ["LQ Sweep", "HTF POI", "BOS"]
+  tradeManagement   String?
+  mistakes          String[] // e.g. ["Impatient", "Too late"]
+
+  entryEmotion      Emotion?
+  exitEmotion       Emotion?
+
+  notes             String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// --- TradeCharts -------------------------------------------------------------
+
+model TradeCharts {
+  id      String  @id @default(cuid())
+  tradeId String  @unique
+  trade   Trade   @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+
+  htfUrl  String? // High Time Frame screenshot URL (Supabase Storage)
+  mtfUrl  String? // Medium Time Frame screenshot URL
+  ltfUrl  String? // Low Time Frame screenshot URL
+}
