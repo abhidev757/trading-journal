@@ -14,9 +14,11 @@ interface ComboboxProps {
   searchPlaceholder?: string
   emptyText?: string
   className?: string
+  iconMap?: Record<string, string>
+  renderIcon?: (value: string) => React.ReactNode
 }
 
-export function Combobox({ options, value, onValueChange, placeholder = "Select...", searchPlaceholder = "Search...", emptyText = "No results.", className }: ComboboxProps) {
+export function Combobox({ options, value, onValueChange, placeholder = "Select...", searchPlaceholder = "Search...", emptyText = "No results.", className, iconMap, renderIcon }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
   return (
@@ -28,7 +30,14 @@ export function Combobox({ options, value, onValueChange, placeholder = "Select.
           aria-expanded={open}
           className={cn("justify-between font-normal", className)}
         >
-          {value || <span className="text-muted-foreground">{placeholder}</span>}
+          <span className="flex items-center gap-2 truncate">
+            {value ? (
+              <>
+                {renderIcon && renderIcon(value)} {!renderIcon && iconMap && iconMap[value] && <span>{iconMap[value]}</span>}
+                {value}
+              </>
+            ) : <span className="text-muted-foreground">{placeholder}</span>}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -48,6 +57,7 @@ export function Combobox({ options, value, onValueChange, placeholder = "Select.
                   }}
                 >
                   <Check className={cn("mr-2 h-4 w-4", value === option ? "opacity-100" : "opacity-0")} />
+                  {renderIcon && renderIcon(option)} {!renderIcon && iconMap && iconMap[option] && <span className="mr-2">{iconMap[option]}</span>}
                   {option}
                 </CommandItem>
               ))}
@@ -68,9 +78,11 @@ interface MultiComboboxProps {
   searchPlaceholder?: string
   className?: string
   creatable?: boolean
+  iconMap?: Record<string, string>
+  renderIcon?: (value: string) => React.ReactNode
 }
 
-export function MultiCombobox({ options, value, onValueChange, placeholder = "Select...", searchPlaceholder = "Search or type...", className, creatable = false }: MultiComboboxProps) {
+export function MultiCombobox({ options, value, onValueChange, placeholder = "Select...", searchPlaceholder = "Search or type...", className, creatable = false, iconMap, renderIcon }: MultiComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [search, setSearch] = React.useState("")
 
@@ -126,6 +138,7 @@ export function MultiCombobox({ options, value, onValueChange, placeholder = "Se
                     onSelect={() => { toggle(option); setSearch("") }}
                   >
                     <Check className={cn("mr-2 h-4 w-4", value.includes(option) ? "opacity-100" : "opacity-0")} />
+                    {renderIcon && renderIcon(option)} {!renderIcon && iconMap && iconMap[option] && <span className="mr-2">{iconMap[option]}</span>}
                     {option}
                   </CommandItem>
                 ))}
@@ -138,6 +151,7 @@ export function MultiCombobox({ options, value, onValueChange, placeholder = "Se
         <div className="flex flex-wrap gap-1.5">
           {value.map((v) => (
             <span key={v} className="inline-flex items-center gap-1 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 px-2.5 py-0.5 text-xs font-medium">
+              {renderIcon && renderIcon(v)} {!renderIcon && iconMap && iconMap[v] && <span>{iconMap[v]}</span>}
               {v}
               <button onClick={() => remove(v)} className="hover:text-violet-900 dark:hover:text-violet-100"><X className="h-3 w-3" /></button>
             </span>

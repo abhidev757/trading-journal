@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn, formatCurrency, getPnlColor, getDayBgColor, formatPercent } from "@/lib/utils"
 import { EMOTION_EMOJI } from "@/lib/constants"
+import { InstrumentIcon } from "@/components/ui/instrument-icon"
 import Link from "next/link"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 
@@ -219,9 +220,10 @@ function Sidebar({ selectedDate, trades }: { selectedDate: Date | null; trades: 
           <div className="space-y-2">
             {dayTrades.map((trade) => (
               <Link key={trade.id} href={`/trades/${trade.id}`}>
-                <div className="flex items-center gap-3 rounded-lg border p-3 hover:bg-accent transition-colors cursor-pointer">
-                  <div className="h-7 w-7 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-xs font-bold text-violet-600">
-                    {trade.instrument.slice(0, 2)}
+                <div className="relative overflow-hidden flex items-center gap-3 rounded-xl border border-white/5 bg-white/5 dark:bg-black/20 backdrop-blur-md p-3 hover:-translate-y-0.5 hover:shadow-[0_4px_15px_rgba(0,0,0,0.2)] transition-all cursor-pointer group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/0 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center text-sm font-bold text-violet-500 group-hover:text-violet-400 group-hover:shadow-[0_0_10px_rgba(139,92,246,0.3)] transition-all">
+                    <InstrumentIcon instrument={trade.instrument} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -261,9 +263,12 @@ function MonthlySummary({ trades, month }: { trades: Trade[]; month: Date }) {
     <div className="border-t bg-card">
       <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Bar chart + stats table */}
-        <div>
-          <h3 className="font-semibold text-base mb-4">Monthly Summary</h3>
-          <div className="flex gap-6">
+        <div className="col-span-full xl:col-span-1">
+          <h3 className="font-semibold text-lg mb-6 flex items-center gap-2">
+            <span className="w-2 h-6 rounded-full bg-violet-500" />
+            Monthly Summary
+          </h3>
+          <div className="flex flex-col md:flex-row gap-6 items-center">
             <div className="flex-1 h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dist} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
@@ -272,7 +277,7 @@ function MonthlySummary({ trades, month }: { trades: Trade[]; month: Date }) {
                   <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                   <Tooltip
                     contentStyle={{ borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))" }}
-                    formatter={(v: number) => [v, "Trades"]}
+                    formatter={(v: any) => [v, "Trades"]}
                   />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {dist.map((entry, i) => (

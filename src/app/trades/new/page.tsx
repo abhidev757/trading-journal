@@ -1,7 +1,7 @@
-"use client"
+﻿"use client"
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm, useFieldArray, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Plus, Trash2, Upload, X, ChevronLeft, Save, ImageIcon } from "lucide-react"
@@ -15,8 +15,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Combobox, MultiCombobox } from "@/components/ui/combobox"
 import { Badge } from "@/components/ui/badge"
+import { DatePicker } from "@/components/ui/date-picker"
+import { TimePicker } from "@/components/ui/time-picker"
+import { InstrumentIcon } from "@/components/ui/instrument-icon"
+import { format } from "date-fns"
+
 import { cn } from "@/lib/utils"
-import { INSTRUMENTS, ENTRY_CONFLUENCES, MISTAKES, TRADING_PLANS, EMOTIONS, EMOTION_EMOJI, SESSIONS } from "@/lib/constants"
+import { INSTRUMENTS, ENTRY_CONFLUENCES, MISTAKES, TRADING_PLANS, EMOTIONS, EMOTION_EMOJI, SESSIONS, INSTRUMENT_ICONS } from "@/lib/constants"
 import Link from "next/link"
 
 const legSchema = z.object({
@@ -286,19 +291,49 @@ export default function AddTradePage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label htmlFor="entryDate">Entry Date</Label>
-                      <Input id="entryDate" type="date" {...register("entryDate")} className={errors.entryDate ? "border-red-500" : ""} />
+                      <Controller
+                        control={control}
+                        name="entryDate"
+                        render={({ field }) => (
+                          <DatePicker
+                            date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                            setDate={(d) => field.onChange(d ? format(d, "yyyy-MM-dd") : "")}
+                          />
+                        )}
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="entryTime">Entry Time</Label>
-                      <Input id="entryTime" type="time" {...register("entryTime")} />
+                      <Controller
+                        control={control}
+                        name="entryTime"
+                        render={({ field }) => (
+                          <TimePicker value={field.value} onChange={field.onChange} />
+                        )}
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="exitDate">Exit Date</Label>
-                      <Input id="exitDate" type="date" {...register("exitDate")} />
+                      <Controller
+                        control={control}
+                        name="exitDate"
+                        render={({ field }) => (
+                          <DatePicker
+                            date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                            setDate={(d) => field.onChange(d ? format(d, "yyyy-MM-dd") : "")}
+                          />
+                        )}
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="exitTime">Exit Time</Label>
-                      <Input id="exitTime" type="time" {...register("exitTime")} />
+                      <Controller
+                        control={control}
+                        name="exitTime"
+                        render={({ field }) => (
+                          <TimePicker value={field.value} onChange={field.onChange} />
+                        )}
+                      />
                     </div>
                   </div>
 
@@ -310,6 +345,7 @@ export default function AddTradePage() {
                       <Label>Instrument</Label>
                       <Combobox
                         options={INSTRUMENTS}
+                        renderIcon={(v) => <InstrumentIcon instrument={v} className="mr-2" />}
                         value={watch("instrument") || ""}
                         onValueChange={(v) => setValue("instrument", v)}
                         placeholder="Search for a symbol"

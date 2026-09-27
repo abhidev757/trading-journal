@@ -1,4 +1,4 @@
-export const INSTRUMENTS = [
+﻿export const INSTRUMENTS = [
   // Forex Majors
   "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD",
   // Forex Minors
@@ -50,18 +50,41 @@ export const EMOTIONS = [
 ] as const
 
 export const EMOTION_EMOJI: Record<string, string> = {
-  Confident: "??",
-  Calm: "??",
-  Excited: "??",
-  Fearful: "??",
-  Greedy: "??",
-  Revenge: "??",
-  Impatient: "??",
-  Relieved: "??",
-  Frustrated: "??",
-  Neutral: "??",
-  FOMO: "??",
-  Disciplined: "??",
+  Confident: "😎",
+  Calm: "🧘",
+  Excited: "🤩",
+  Fearful: "😨",
+  Greedy: "🤑",
+  Revenge: "👿",
+  Impatient: "⏳",
+  Relieved: "😮‍💨",
+  Frustrated: "😤",
+  Neutral: "😐",
+  FOMO: "👀",
+  Disciplined: "🛡️",
+}
+
+export const INSTRUMENT_ICONS: Record<string, string> = {
+  // Forex Majors
+  "EURUSD": "🇪🇺/🇺🇸", "GBPUSD": "🇬🇧/🇺🇸", "USDJPY": "🇺🇸/🇯🇵", "USDCHF": "🇺🇸/🇨🇭", 
+  "AUDUSD": "🇦🇺/🇺🇸", "USDCAD": "🇺🇸/🇨🇦", "NZDUSD": "🇳🇿/🇺🇸",
+  // Forex Minors
+  "EURGBP": "🇪🇺/🇬🇧", "EURJPY": "🇪🇺/🇯🇵", "EURCHF": "🇪🇺/🇨🇭", "EURAUD": "🇪🇺/🇦🇺", 
+  "EURCAD": "🇪🇺/🇨🇦", "EURNZD": "🇪🇺/🇳🇿",
+  "GBPJPY": "🇬🇧/🇯🇵", "GBPCHF": "🇬🇧/🇨🇭", "GBPAUD": "🇬🇧/🇦🇺", "GBPCAD": "🇬🇧/🇨🇦", "GBPNZD": "🇬🇧/🇳🇿",
+  "AUDJPY": "🇦🇺/🇯🇵", "AUDCHF": "🇦🇺/🇨🇭", "AUDCAD": "🇦🇺/🇨🇦", "AUDNZD": "🇦🇺/🇳🇿",
+  "CADJPY": "🇨🇦/🇯🇵", "CHFJPY": "🇨🇭/🇯🇵", "NZDJPY": "🇳🇿/🇯🇵", "NZDCAD": "🇳🇿/🇨🇦", "NZDCHF": "🇳🇿/🇨🇭",
+  // Gold & Silver
+  "XAUUSD": "🟡", "XAGUSD": "⚪", "XAUJPY": "🟡/🇯🇵", "XAUEUR": "🟡/🇪🇺",
+  // Crypto
+  "BTCUSD": "₿", "ETHUSD": "⟠", "BNBUSD": "🟡", "SOLUSD": "🟣", "XRPUSD": "✖️", "ADAUSD": "🔵", "DOGEUSD": "🐕",
+  "BTCEUR": "₿/🇪🇺", "ETHEUR": "⟠/🇪🇺",
+  // Indices
+  "US30": "🇺🇸", "US500": "🇺🇸", "NAS100": "🇺🇸", "US2000": "🇺🇸",
+  "UK100": "🇬🇧", "GER40": "🇩🇪", "FRA40": "🇫🇷", "ESP35": "🇪🇸", "EU50": "🇪🇺",
+  "JP225": "🇯🇵", "AUS200": "🇦🇺", "HK50": "🇭🇰",
+  // Oil
+  "USOIL": "🛢️", "UKOIL": "🛢️",
 }
 
 export const EMOTION_COLORS: Record<string, string> = {

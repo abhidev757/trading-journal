@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { format, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns"
@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { cn, formatCurrency, getPnlColor, formatR } from "@/lib/utils"
 import { EMOTION_EMOJI, EMOTION_COLORS } from "@/lib/constants"
+import { InstrumentIcon } from "@/components/ui/instrument-icon"
 import { DEMO_TRADES, type DemoTrade } from "@/lib/demo-data"
 import Link from "next/link"
 
@@ -126,7 +127,7 @@ export default function TradeDetailPage() {
           </Link>
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-xs font-bold text-violet-600">
-              {trade.instrument.slice(0, 2)}
+              <InstrumentIcon instrument={trade.instrument} />
             </div>
             <h1 className="text-lg font-bold">
               {trade.instrument}
@@ -170,7 +171,7 @@ export default function TradeDetailPage() {
                   <div>
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <div className="h-6 w-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-xs text-violet-600 font-bold">
-                        {trade.instrument.slice(0, 2)}
+                        <InstrumentIcon instrument={trade.instrument} />
                       </div>
                       <span className="text-sm font-semibold">{trade.instrument}</span>
                     </div>

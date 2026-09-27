@@ -172,8 +172,7 @@ export const DEMO_TRADES: DemoTrade[] = [
       mistakes: [],
       entryEmotion: "Disciplined",
       exitEmotion: "Calm",
-      notes: "Followed the playbook perfectly.",
-      planFollowed: true,
+      notes: "Followed the playbook perfectly."
     },
     charts: { htfUrl: undefined, mtfUrl: undefined, ltfUrl: undefined },
   },
