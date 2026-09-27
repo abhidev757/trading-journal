@@ -63,7 +63,7 @@ export function Navbar() {
                 )}
               >
                 <Icon className="h-4 w-4" />
-                {label}
+                <span className="hidden sm:inline-block">{label}</span>
               </Button>
             </Link>
           ))}
@@ -76,7 +76,7 @@ export function Navbar() {
               <Link href="/trades/new">
                 <Button id="add-trade-btn" size="sm" className="gap-1.5">
                   <Plus className="h-4 w-4" />
-                  Add Manual Trade
+                  <span className="hidden sm:inline-block">Add Manual Trade</span>
                 </Button>
               </Link>
               <Button variant="ghost" size="sm" onClick={handleLogout} title="Log out">

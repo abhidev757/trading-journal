@@ -20,17 +20,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning className="overflow-x-hidden max-w-[100vw]">
+      <body className={`${inter.className} overflow-x-hidden max-w-[100vw]`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
           storageKey="tj-theme"
         >
-          <div className="min-h-screen bg-background">
+          <div className="min-h-screen bg-background overflow-x-hidden max-w-[100vw] w-full flex flex-col">
             <Navbar />
-            <main>{children}</main>
+            <main className="flex-1 w-full max-w-[100vw] overflow-x-hidden">{children}</main>
           </div>
         </ThemeProvider>
       </body>

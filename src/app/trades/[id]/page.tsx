@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { format, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns"
@@ -118,26 +118,27 @@ export default function TradeDetailPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-              <ChevronLeft className="h-4 w-4" />
-              Journal
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-xs font-bold text-violet-600">
-              <InstrumentIcon instrument={trade.instrument} />
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+          <div className="flex items-start gap-3 flex-1 w-full">
+            <Link href="/" className="shrink-0 mt-1 md:mt-0">
+              <Button variant="ghost" size="icon" className="text-muted-foreground md:w-auto md:px-3">
+                <ChevronLeft className="h-4 w-4" />
+                <span className="hidden md:inline ml-1">Journal</span>
+              </Button>
+            </Link>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-xs font-bold text-violet-600 shrink-0">
+                <InstrumentIcon instrument={trade.instrument} />
+              </div>
+              <h1 className="text-lg font-bold flex flex-wrap items-center gap-x-2">
+                {trade.instrument}
+                <span className="text-muted-foreground font-normal text-xs sm:text-sm">
+                  {hasLegs ? `${trade.legs.length} positions` : "1 position"} &middot; {format(new Date(trade.entryDate), "EEE, MMM d, yyyy")}
+                </span>
+              </h1>
             </div>
-            <h1 className="text-lg font-bold">
-              {trade.instrument}
-              <span className="text-muted-foreground font-normal text-sm ml-2">
-                {hasLegs ? `${trade.legs.length} positions` : "1 position"}
-                {" "}· {format(new Date(trade.entryDate), "EEE, MMM d, yyyy")}
-              </span>
-            </h1>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 self-end md:self-auto">
             <Link href={`/trades/${id}/edit`}>
               <Button variant="outline" size="sm" className="gap-1.5">
                 <Pencil className="h-4 w-4" />
@@ -167,7 +168,7 @@ export default function TradeDetailPage() {
                 <Separator />
 
                 {/* Core identity */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div>
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <div className="h-6 w-6 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-xs text-violet-600 font-bold">
@@ -300,7 +301,7 @@ export default function TradeDetailPage() {
                 {r ? (
                   <>
                     {/* Plan */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Plan</p>
                         <div className="flex items-center gap-2">
@@ -360,7 +361,7 @@ export default function TradeDetailPage() {
                     {(r.entryEmotion || r.exitEmotion) && (
                       <>
                         <Separator />
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {r.entryEmotion && (
                             <div>
                               <p className="text-xs text-muted-foreground mb-2">Entry Emotion</p>

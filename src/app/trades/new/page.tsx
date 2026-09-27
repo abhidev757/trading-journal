@@ -1,10 +1,10 @@
-﻿"use client"
+"use client"
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Plus, Trash2, Upload, X, ChevronLeft, Save, ImageIcon } from "lucide-react"
+import { Plus, Trash2, Upload, X, ChevronLeft, Save, ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -252,29 +252,17 @@ export default function AddTradePage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-              <ChevronLeft className="h-4 w-4" />
-              Journal
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold">Add Trade</h1>
-            <p className="text-sm text-muted-foreground">Log a new trade with execution details and reflection</p>
-          </div>
-          <div className="ml-auto flex gap-2">
-            <Link href="/"><Button variant="outline" size="sm">Cancel</Button></Link>
-            <Button
-              id="save-trade-btn"
-              size="sm"
-              className="gap-1.5"
-              onClick={handleSubmit(onSubmit)}
-              disabled={submitting}
-            >
-              <Save className="h-4 w-4" />
-              {submitting ? "Saving..." : "Save Trade"}
-            </Button>
+        <div className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className="text-muted-foreground shrink-0">
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold">Add Trade</h1>
+              <p className="text-xs text-muted-foreground">Log a new trade</p>
+            </div>
           </div>
         </div>
 
@@ -288,7 +276,7 @@ export default function AddTradePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Date & Time */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="entryDate">Entry Date</Label>
                       <Controller
@@ -340,7 +328,7 @@ export default function AddTradePage() {
                   <Separator />
 
                   {/* Instrument & Direction */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label>Instrument</Label>
                       <Combobox
@@ -368,7 +356,7 @@ export default function AddTradePage() {
                   </div>
 
                   {/* Session & Lots */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label>Session</Label>
                       <Select value={watch("session") || ""} onValueChange={(v) => setValue("session", v)}>
@@ -391,7 +379,7 @@ export default function AddTradePage() {
                   {/* Execution */}
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Execution</p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label htmlFor="entryPrice">Entry Price</Label>
                         <Input id="entryPrice" type="number" step="0.00001" placeholder="0.00000" {...register("entryPrice")} className={errors.entryPrice ? "border-red-500" : ""} />
@@ -415,12 +403,16 @@ export default function AddTradePage() {
                   {legFields.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Split Orders</p>
-                      <div className="grid grid-cols-5 gap-2 text-[10px] text-muted-foreground font-medium">
-                        <span>#</span><span>Lots</span><span>Entry</span><span>SL</span><span>TP</span>
+                      <div className="overflow-x-auto w-full">
+                        <div className="min-w-[400px]">
+                          <div className="grid grid-cols-5 gap-2 text-[10px] text-muted-foreground font-medium">
+                            <span>#</span><span>Lots</span><span>Entry</span><span>SL</span><span>TP</span>
+                          </div>
+                          {legFields.map((field, i) => (
+                            <SplitOrderRow key={field.id} index={i} onRemove={() => removeLeg(i)} register={register} />
+                          ))}
+                        </div>
                       </div>
-                      {legFields.map((field, i) => (
-                        <SplitOrderRow key={field.id} index={i} onRemove={() => removeLeg(i)} register={register} />
-                      ))}
                     </div>
                   )}
                   <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => appendLeg({ lotSize: "", entryPrice: "", exitPrice: "", stopLoss: "", takeProfit: "" })}>
@@ -441,7 +433,7 @@ export default function AddTradePage() {
                   {/* Performance */}
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Performance</p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label htmlFor="riskR">Risk (R)</Label>
                         <Input id="riskR" type="number" step="0.01" placeholder="$0.00" {...register("riskR")} />
@@ -458,7 +450,7 @@ export default function AddTradePage() {
                   {/* Costs */}
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Costs</p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label htmlFor="swap">Swap</Label>
                         <Input id="swap" type="number" step="0.01" placeholder="$0.00" {...register("swap")} />
@@ -497,7 +489,7 @@ export default function AddTradePage() {
                 </CardHeader>
                 <CardContent className="space-y-5">
                   {/* Plan */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Plan</Label>
                       <div className="flex items-center gap-2">
@@ -527,7 +519,7 @@ export default function AddTradePage() {
                   <Separator />
 
                   {/* Entry Confluences */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label>Entry Confluences</Label>
                       <MultiCombobox
@@ -563,7 +555,7 @@ export default function AddTradePage() {
                         creatable
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label>Entry Emotion</Label>
                         <Select value={watch("entryEmotion") || ""} onValueChange={(v) => setValue("entryEmotion", v)}>
@@ -612,6 +604,19 @@ export default function AddTradePage() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 mt-6 border-t border-border">
+            <Link href="/" className="w-full sm:w-auto"><Button type="button" variant="outline" className="w-full sm:w-auto">Cancel</Button></Link>
+            <Button
+              id="save-trade-btn"
+              type="submit"
+              className="w-full sm:w-auto gap-1.5 bg-violet-600 hover:bg-violet-700 text-white"
+              disabled={submitting}
+            >
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save Trade
+            </Button>
           </div>
         </form>
       </div>
