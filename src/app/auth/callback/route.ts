@@ -4,9 +4,19 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/'
+
+  const requestUrl = new URL(request.url)
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const isLocalEnv = process.env.NODE_ENV === 'development'
+  let origin = requestUrl.origin
+  if (forwardedHost && !isLocalEnv) {
+    origin = `https://${forwardedHost}`
+  } else if (process.env.NEXT_PUBLIC_APP_URL) {
+    origin = process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')
+  }
 
   if (code) {
     const cookieStore = await cookies()
@@ -49,9 +59,9 @@ export async function GET(request: Request) {
         },
       })
       
-      return NextResponse.redirect(`http://localhost:3000${next}`)
+      return NextResponse.redirect(`${origin}${next}`)
     }
   }
 
-  return NextResponse.redirect("http://localhost:3000/auth/auth-code-error")
+  return NextResponse.redirect(`${origin}/login?error=auth-code-error`)
 }
