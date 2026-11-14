@@ -1,4 +1,4 @@
-﻿export const INSTRUMENTS = [
+export const INSTRUMENTS = [
   // Forex Majors
   "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD",
   // Forex Minors
@@ -80,7 +80,7 @@ export const INSTRUMENT_ICONS: Record<string, string> = {
   "BTCUSD": "₿", "ETHUSD": "⟠", "BNBUSD": "🟡", "SOLUSD": "🟣", "XRPUSD": "✖️", "ADAUSD": "🔵", "DOGEUSD": "🐕",
   "BTCEUR": "₿/🇪🇺", "ETHEUR": "⟠/🇪🇺",
   // Indices
-  "US30": "🇺🇸", "US500": "🇺🇸", "NAS100": "🇺🇸", "US2000": "🇺🇸",
+  "US30": "🇺🇸", "US500": "🇺🇸", "NAS100": "🇺🇸", "NASDAQ": "🇺🇸", "NDX": "🇺🇸", "US2000": "🇺🇸",
   "UK100": "🇬🇧", "GER40": "🇩🇪", "FRA40": "🇫🇷", "ESP35": "🇪🇸", "EU50": "🇪🇺",
   "JP225": "🇯🇵", "AUS200": "🇦🇺", "HK50": "🇭🇰",
   // Oil

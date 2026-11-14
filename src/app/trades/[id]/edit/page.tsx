@@ -653,7 +653,7 @@ export default function EditTradePage() {
 
                   {/* Notes */}
                   <div className="space-y-1.5">
-                    <Label htmlFor="notes">Add a note or voice reflection</Label>
+                    <Label htmlFor="notes">Add a note</Label>
                     <Textarea
                       id="notes"
                       placeholder="What went well? What will you do differently next time?"
