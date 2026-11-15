@@ -12,7 +12,7 @@ export function formatCurrency(value: number, compact = false): string {
       currency: "USD",
       notation: "compact",
       maximumFractionDigits: 1,
-    }).format(value)
+    }).format(value).replace("K", "k")
   }
   return new Intl.NumberFormat("en-US", {
     style: "currency",

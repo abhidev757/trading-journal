@@ -114,7 +114,7 @@ function DayCell({ day, dayData, isCurrentMonth, selectedDate, onSelect }: {
     <button
       onClick={() => onSelect(day)}
       className={cn(
-        "relative min-h-[80px] w-full rounded-xl border p-2 text-left transition-all duration-150 hover:shadow-md hover:border-violet-300",
+        "relative min-h-[72px] sm:min-h-[82px] w-full rounded-xl border px-1 py-1.5 sm:p-2 text-left transition-all duration-150 hover:shadow-md hover:border-violet-300 flex flex-col justify-between overflow-hidden",
         !isCurrentMonth && "opacity-30",
         isSelected && "ring-2 ring-violet-500 border-violet-400",
         todayDay && !isSelected && "border-violet-300 bg-violet-50 dark:bg-violet-950/20",
@@ -123,16 +123,24 @@ function DayCell({ day, dayData, isCurrentMonth, selectedDate, onSelect }: {
       )}
     >
       <span className={cn(
-        "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
+        "inline-flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full text-[10px] sm:text-xs font-semibold shrink-0",
         todayDay && "bg-violet-600 text-white",
         !todayDay && "text-foreground"
       )}>
         {format(day, "d")}
       </span>
       {hasTrades && (
-        <div className="mt-1 space-y-0.5">
-          <p className="text-[10px] text-muted-foreground font-medium">{dayData!.trades.length} Trade{dayData!.trades.length !== 1 ? "s" : ""}</p>
-          <p className={cn("text-xs font-bold", getPnlColor(pnl))}>
+        <div className="w-full min-w-0 overflow-hidden text-left mt-auto">
+          <p className="text-[8.5px] sm:text-[10px] text-muted-foreground font-medium truncate leading-none mb-0.5">
+            {dayData!.trades.length} {dayData!.trades.length === 1 ? "Trade" : "Trades"}
+          </p>
+          <p
+            className={cn(
+              "text-[9.5px] sm:text-xs font-bold truncate leading-tight tracking-tighter tabular-nums",
+              getPnlColor(pnl)
+            )}
+            title={pnl !== null ? formatCurrency(pnl, false) : undefined}
+          >
             {pnl !== null ? formatCurrency(pnl, true) : "—"}
           </p>
         </div>
@@ -496,16 +504,16 @@ function MonthlySummary({ trades, month }: { trades: Trade[]; month: Date }) {
 
 function CalendarSkeletonGrid() {
   return (
-    <div className="grid grid-cols-7 gap-2">
+    <div className="grid grid-cols-7 gap-1 sm:gap-2">
       {Array.from({ length: 35 }).map((_, i) => (
         <div
           key={i}
-          className="min-h-[80px] w-full rounded-xl border border-muted/40 p-2 bg-card flex flex-col justify-between"
+          className="min-h-[72px] sm:min-h-[82px] w-full rounded-xl border border-muted/40 px-1 py-1.5 sm:p-2 bg-card flex flex-col justify-between overflow-hidden"
         >
           <Skeleton className="h-5 w-5 rounded-full" />
-          <div className="space-y-1.5 mt-2">
-            <Skeleton className="h-2.5 w-10" />
-            <Skeleton className="h-3.5 w-14" />
+          <div className="space-y-1 mt-auto">
+            <Skeleton className="h-2 w-8 sm:w-10" />
+            <Skeleton className="h-3 w-10 sm:w-14" />
           </div>
         </div>
       ))}
@@ -618,9 +626,9 @@ export default function DashboardPage() {
 
         {/* Calendar grid + summary */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pb-[100px] md:pb-0">
-          <div className="p-2 sm:p-4 w-full"><div className="w-full">
+          <div className="p-1 sm:p-4 w-full"><div className="w-full">
             {/* Week day headers */}
-            <div className="grid grid-cols-7 gap-2 mb-2">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
               {weekDays.map((d) => (
                 <div key={d} className="text-center text-xs font-semibold text-muted-foreground py-1">{d}</div>
               ))}
@@ -629,7 +637,7 @@ export default function DashboardPage() {
             {loading ? (
               <CalendarSkeletonGrid />
             ) : (
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2">
                 {calendarDays.map((day) => {
                   const key = format(day, "yyyy-MM-dd")
                   const dayTrades = dayMap.get(key) || []
