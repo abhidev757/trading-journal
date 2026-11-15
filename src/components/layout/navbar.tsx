@@ -3,14 +3,12 @@ import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Plus, LogOut } from "lucide-react"
-import { useTheme } from "next-themes"
 import { ThemeToggle } from "./theme-toggle"
 import { Button } from "@/components/ui/button"
 import { createBrowserClient } from "@supabase/ssr"
 
 export function Navbar() {
   const router = useRouter()
-  const { resolvedTheme } = useTheme()
   const [user, setUser] = React.useState<any>(null)
 
   const supabase = createBrowserClient(
@@ -41,9 +39,14 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 mr-4">
           <img
-            src={resolvedTheme === "dark" ? "/icon-dark.png" : "/icon-light.png"}
+            src="/icon-dark.png"
             alt="TradeJournal"
-            className="h-14 w-14 object-contain"
+            className="h-14 w-14 object-contain hidden dark:block"
+          />
+          <img
+            src="/icon-light.png"
+            alt="TradeJournal"
+            className="h-14 w-14 object-contain block dark:hidden"
           />
           <span className="font-semibold text-sm tracking-tight hidden sm:block">TradeJournal</span>
         </Link>
