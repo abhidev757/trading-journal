@@ -5,7 +5,8 @@ import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop"
 import "react-image-crop/dist/ReactCrop.css"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Crop as CropIcon, Sparkles, X, Maximize2, Loader2 } from "lucide-react"
+import { Crop as CropIcon, Sparkles, X, Maximize2, Loader2, Info } from "lucide-react"
+import { MT5SampleModal } from "@/components/trades/mt5-sample-modal"
 
 interface ImageCropModalProps {
   open: boolean
@@ -67,6 +68,7 @@ export function ImageCropModal({ open, file, onClose, onConfirm }: ImageCropModa
   const [crop, setCrop] = React.useState<Crop>()
   const [completedCrop, setCompletedCrop] = React.useState<PixelCrop | null>(null)
   const [isProcessing, setIsProcessing] = React.useState(false)
+  const [showSample, setShowSample] = React.useState(false)
   const imgRef = React.useRef<HTMLImageElement>(null)
 
   React.useEffect(() => {
@@ -152,20 +154,36 @@ export function ImageCropModal({ open, file, onClose, onConfirm }: ImageCropModa
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="w-[96vw] max-w-xl max-h-[92vh] flex flex-col p-4 sm:p-5 gap-3.5 bg-background/95 backdrop-blur-md border-violet-500/30 rounded-2xl overflow-hidden">
         <DialogHeader className="space-y-1 text-left shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-violet-600/20 text-violet-400 flex items-center justify-center border border-violet-500/30">
-              <CropIcon className="h-4 w-4" />
+          <div className="flex items-center justify-between gap-2 pr-6">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="h-8 w-8 rounded-lg bg-violet-600/20 text-violet-400 flex items-center justify-center border border-violet-500/30 shrink-0">
+                <CropIcon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <DialogTitle className="text-base sm:text-lg font-semibold tracking-tight">
+                  Crop MT5 Trade
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Drag the box to frame only the trade row you want to scan.
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-base sm:text-lg font-semibold tracking-tight">
-                Crop MT5 Trade
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Drag the box to frame only the trade row you want to scan.
-              </DialogDescription>
-            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowSample(true)}
+              className="flex items-center justify-center h-7 w-7 rounded-full bg-violet-500/15 border border-violet-500/30 hover:bg-violet-500/25 hover:border-violet-400 hover:shadow-[0_0_12px_rgba(139,92,246,0.4)] hover:scale-105 active:scale-90 text-violet-300 shrink-0 shadow-sm transition-all duration-200 cursor-pointer"
+              title="View sample MT5 screenshot"
+              aria-label="View sample MT5 screenshot"
+            >
+              <Info className="h-4 w-4 text-violet-300" />
+            </button>
           </div>
         </DialogHeader>
+
+        {showSample && (
+          <MT5SampleModal open={showSample} onClose={() => setShowSample(false)} />
+        )}
 
         {/* Cropper preview area */}
         <div className="relative flex-1 min-h-[220px] max-h-[50vh] sm:max-h-[58vh] overflow-auto rounded-xl bg-black/60 border border-border flex items-center justify-center p-2 select-none touch-none">

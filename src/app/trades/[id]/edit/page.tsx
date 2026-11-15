@@ -4,9 +4,10 @@ import { useRouter } from "next/navigation"
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Plus, Trash2, Upload, X, ChevronLeft, Save, ImageIcon, Loader2, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Plus, Trash2, Upload, X, ChevronLeft, Save, ImageIcon, Loader2, Sparkles, AlertCircle, CheckCircle2, Info } from "lucide-react"
 import { extractTradeFromScreenshot } from "@/lib/mt5-parser"
 import { ImageCropModal } from "@/components/trades/image-crop-modal"
+import { MT5SampleModal } from "@/components/trades/mt5-sample-modal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -184,6 +185,7 @@ export default function EditTradePage() {
   const [isDragOver, setIsDragOver] = React.useState(false)
   const [pendingCropFile, setPendingCropFile] = React.useState<File | null>(null)
   const [isCropOpen, setIsCropOpen] = React.useState(false)
+  const [isSampleOpen, setIsSampleOpen] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const handleSelectScreenshot = (file: File) => {
@@ -469,6 +471,11 @@ export default function EditTradePage() {
         </div>
 
         {/* ── MT5 Screenshot Auto-Fill Banner ── */}
+        <MT5SampleModal
+          open={isSampleOpen}
+          onClose={() => setIsSampleOpen(false)}
+        />
+
         <ImageCropModal
           open={isCropOpen}
           file={pendingCropFile}
@@ -505,19 +512,33 @@ export default function EditTradePage() {
           )}
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div className="flex items-start sm:items-center gap-3 min-w-0">
+            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
               <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-violet-600/20 text-violet-400 flex items-center justify-center shrink-0 border border-violet-500/30 mt-0.5 sm:mt-0">
                 <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-sm sm:text-base font-semibold text-foreground tracking-tight">
-                    Auto-fill from MT5 Screenshot
-                  </h3>
-                  <Badge variant="purple" className="text-[10px] px-1.5 py-0 h-4 font-normal shrink-0">
-                    AI OCR
-                  </Badge>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                    <h3 className="text-sm sm:text-base font-semibold text-foreground tracking-tight">
+                      Auto-fill from MT5 Screenshot
+                    </h3>
+                    <Badge variant="purple" className="text-[10px] px-1.5 py-0 h-4 font-normal shrink-0">
+                      AI OCR
+                    </Badge>
+                  </div>
+
+                  {/* Mobile (i) info button on the right end */}
+                  <button
+                    type="button"
+                    onClick={() => setIsSampleOpen(true)}
+                    className="sm:hidden flex items-center justify-center h-7 w-7 rounded-full bg-violet-500/15 border border-violet-500/30 hover:bg-violet-500/25 hover:border-violet-400 hover:shadow-[0_0_12px_rgba(139,92,246,0.4)] hover:scale-105 active:scale-90 text-violet-300 shrink-0 shadow-sm transition-all duration-200 cursor-pointer"
+                    title="View sample MT5 screenshot"
+                    aria-label="View sample MT5 screenshot"
+                  >
+                    <Info className="h-4 w-4 text-violet-300" />
+                  </button>
                 </div>
+
                 <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                   <span className="sm:hidden">Upload your trade screenshot to update fields automatically.</span>
                   <span className="hidden sm:inline">
@@ -554,6 +575,17 @@ export default function EditTradePage() {
                   </>
                 )}
               </Button>
+
+              {/* Desktop (i) info button next to upload */}
+              <button
+                type="button"
+                onClick={() => setIsSampleOpen(true)}
+                className="hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-xl border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 hover:border-violet-400 hover:shadow-[0_0_12px_rgba(139,92,246,0.35)] hover:scale-105 active:scale-95 text-violet-300 shrink-0 transition-all duration-200 cursor-pointer"
+                title="View sample MT5 screenshot"
+                aria-label="View sample MT5 screenshot"
+              >
+                <Info className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
