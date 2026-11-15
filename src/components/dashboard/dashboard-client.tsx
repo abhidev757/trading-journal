@@ -177,91 +177,119 @@ function Sidebar({ selectedDate, trades, loading }: { selectedDate: Date | null;
   const isDragging = React.useRef(false)
   const isOpenRef = React.useRef(false)
 
+  const dayTrades = selectedDate
+    ? trades.filter((t) => isSameDay(new Date(t.entryDate), selectedDate))
+    : []
+  const dayPnl = dayTrades.reduce((sum, t) => sum + (t.netPnl ?? 0), 0)
+  const stats = computeStats(dayTrades)
+
   React.useEffect(() => {
     isOpenRef.current = isOpen
   }, [isOpen])
 
+  const isMobile = () => typeof window !== "undefined" && window.innerWidth < 768
+  const getClosedY = () => (asideRef.current ? asideRef.current.getBoundingClientRect().height - 100 : 0)
+
+  const applyTranslate = (y: number, animate: boolean) => {
+    if (!asideRef.current) return
+    if (!isMobile()) {
+      asideRef.current.style.transform = ""
+      asideRef.current.style.transition = ""
+      return
+    }
+    asideRef.current.style.transition = animate ? "transform 450ms cubic-bezier(0.32,0.72,0,1)" : "none"
+    asideRef.current.style.transform = `translateY(${y}px)`
+  }
+
+  // Sync on open/close state change
   React.useEffect(() => {
-    const el = asideRef.current
-    if (!el) return
+    applyTranslate(isOpen ? 0 : getClosedY(), true)
+  }, [isOpen])
 
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY.current = e.touches[0].clientY
-      isDragging.current = false
-    }
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (touchStartY.current === null) return
-      const currentY = e.touches[0].clientY
-      const diffY = currentY - touchStartY.current
-
-      const scrollContainer = el.querySelector('.overflow-y-auto')
-      const isScrolledToTop = !scrollContainer || scrollContainer.scrollTop <= 0
-
-      if (diffY > 10 && isOpenRef.current && isScrolledToTop) {
-        isDragging.current = true
-      } else if (diffY < -10 && !isOpenRef.current) {
-        isDragging.current = true
+  // Set initial position on mount + handle resize
+  React.useEffect(() => {
+    const init = () => {
+      if (!asideRef.current) return
+      if (isMobile()) {
+        applyTranslate(isOpenRef.current ? 0 : getClosedY(), false)
+      } else {
+        asideRef.current.style.transform = ""
+        asideRef.current.style.transition = ""
       }
     }
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (!isDragging.current || touchStartY.current === null) {
-        touchStartY.current = null
-        isDragging.current = false
-        return
-      }
-      const endY = e.changedTouches[0].clientY
-      const diffY = endY - touchStartY.current
-
-      if (diffY > 40 && isOpenRef.current) {
-        setIsOpen(false)
-      } else if (diffY < -40 && !isOpenRef.current) {
-        setIsOpen(true)
-      }
-
-      touchStartY.current = null
-      isDragging.current = false
-    }
-
-    el.addEventListener('touchstart', handleTouchStart, { passive: true })
-    el.addEventListener('touchmove', handleTouchMove, { passive: true })
-    el.addEventListener('touchend', handleTouchEnd, { passive: true })
-
-    return () => {
-      el.removeEventListener('touchstart', handleTouchStart)
-      el.removeEventListener('touchmove', handleTouchMove)
-      el.removeEventListener('touchend', handleTouchEnd)
-    }
+    requestAnimationFrame(init)
+    window.addEventListener("resize", init)
+    return () => window.removeEventListener("resize", init)
   }, [])
 
-  const dayTrades = selectedDate
-    ? trades.filter((t) => isSameDay(new Date(t.entryDate), selectedDate))
-    : []
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (!isMobile()) return
+    const target = e.target as HTMLElement
+    const scrollContainer = asideRef.current?.querySelector(".overflow-y-auto")
+    if (isOpenRef.current && scrollContainer && scrollContainer.contains(target) && scrollContainer.scrollTop > 0) {
+      return
+    }
+    touchStartY.current = e.touches[0].clientY
+    isDragging.current = true
+    if (asideRef.current) asideRef.current.style.transition = "none"
+  }
 
-  const dayPnl = dayTrades.reduce((sum, t) => sum + (t.netPnl ?? 0), 0)
-  const stats = computeStats(dayTrades)
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current || touchStartY.current === null || !asideRef.current) return
+    const delta = e.touches[0].clientY - touchStartY.current
+    if (isOpenRef.current && delta < 0) return
+    const closedY = getClosedY()
+    const baseY = isOpenRef.current ? 0 : closedY
+    const newY = Math.max(0, Math.min(closedY, baseY + delta))
+    asideRef.current.style.transform = `translateY(${newY}px)`
+  }
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging.current || touchStartY.current === null) return
+    const delta = e.changedTouches[0].clientY - touchStartY.current
+    if (!isOpenRef.current && delta < -40) {
+      setIsOpen(true)
+    } else if (isOpenRef.current && delta > 40) {
+      setIsOpen(false)
+    } else {
+      applyTranslate(isOpenRef.current ? 0 : getClosedY(), true)
+    }
+    touchStartY.current = null
+    isDragging.current = false
+  }
 
   return (
     <aside
-      ref={asideRef}
+      ref={asideRef as React.RefObject<HTMLElement>}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
       className={cn(
-        "fixed md:static inset-x-0 bottom-0 z-40 bg-card border-t md:border-t-0 md:border-l flex flex-col transition-all duration-300 ease-in-out md:translate-y-0",
-        "w-full md:w-80 lg:w-96 shrink-0",
-        "shadow-2xl md:shadow-none",
-        isOpen ? "h-[85vh] rounded-t-3xl" : "h-[100px] md:h-full rounded-t-2xl md:rounded-none"
+        // Desktop: static sidebar
+        "md:w-80 lg:w-96 md:shrink-0 md:border-l md:bg-card md:flex md:flex-col md:h-full md:overflow-y-auto md:relative md:z-0 md:rounded-none md:shadow-none md:border-t-0 md:translate-y-0",
+        // Mobile: fixed bottom drawer with hardware-accelerated transform
+        "fixed left-0 right-0 bottom-0 z-50 flex flex-col bg-card/95 backdrop-blur-xl rounded-t-3xl border-t shadow-[0_-10px_40px_rgba(0,0,0,0.3)]",
+        "h-[85vh] md:h-full touch-none md:touch-auto"
       )}
     >
       <div className="relative shrink-0">
         <button
           className="md:hidden absolute left-1/2 -top-5 -translate-x-1/2 bg-card border border-b-0 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] rounded-t-xl w-14 h-5 flex items-center justify-center text-muted-foreground z-10 transition-colors"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={(e) => {
+            e.stopPropagation()
+            setIsOpen(!isOpen)
+          }}
         >
           <ChevronUp className={cn("h-4 w-4 transition-transform duration-500", isOpen ? "rotate-180" : "")} />
         </button>
 
         {/* Day header */}
-        <div className="p-4 pb-3 border-b flex flex-col h-[100px]">
+        <div
+          className="p-4 pb-3 border-b flex flex-col h-[100px] cursor-pointer md:cursor-default"
+          onClick={() => {
+            if (isMobile() && !isOpen) setIsOpen(true)
+          }}
+        >
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-semibold text-muted-foreground">
               {selectedDate ? format(selectedDate, "EEE, MMMM d") : "Select a day"}
