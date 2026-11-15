@@ -1,20 +1,14 @@
 "use client"
 import * as React from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Plus, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Plus, LogOut } from "lucide-react"
 import { useTheme } from "next-themes"
 import { ThemeToggle } from "./theme-toggle"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { createBrowserClient } from "@supabase/ssr"
 
-const navItems = [
-  { href: "/", label: "Journal", icon: LayoutDashboard },
-]
-
 export function Navbar() {
-  const pathname = usePathname()
   const router = useRouter()
   const { resolvedTheme } = useTheme()
   const [user, setUser] = React.useState<any>(null)
@@ -54,24 +48,7 @@ export function Navbar() {
           <span className="font-semibold text-sm tracking-tight hidden sm:block">TradeJournal</span>
         </Link>
 
-        {/* Nav links */}
-        <nav className="flex items-center gap-1">
-          {navItems.map(({ href, label, icon: Icon }) => (
-            <Link key={href} href={href}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "gap-2 text-muted-foreground",
-                  pathname === href && "text-foreground bg-accent"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline-block">{label}</span>
-              </Button>
-            </Link>
-          ))}
-        </nav>
+        {/* Nav links removed - logo/icon already links to dashboard */}
 
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
