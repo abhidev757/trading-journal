@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay, isToday, addMonths, subMonths } from "date-fns"
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay, isToday, addMonths, subMonths, startOfDay, endOfDay } from "date-fns"
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, TrendingUp, TrendingDown, Target, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -56,19 +56,40 @@ function computeStats(trades: Trade[]) {
 function getWeeks(month: Date, trades: Trade[]) {
   const start = startOfMonth(month)
   const end = endOfMonth(month)
-  const weeks: { label: string; days: number; pnl: number }[] = []
+  const today = new Date()
+  const isThisMonth = isSameMonth(today, month)
+  const weeks: { label: string; dateRange: string; days: number; pnl: number; isCurrent: boolean }[] = []
   let current = startOfWeek(start, { weekStartsOn: 1 })
   let weekNum = 1
+
   while (current <= end) {
     const wEnd = endOfWeek(current, { weekStartsOn: 1 })
-    const days = eachDayOfInterval({ start: current, end: wEnd > end ? end : wEnd })
+    const wStartInMonth = current < start ? start : current
+    const wEndInMonth = wEnd > end ? end : wEnd
+
     const weekTrades = trades.filter((t) => {
       const d = new Date(t.entryDate)
-      return d >= current && d <= wEnd
+      return d >= wStartInMonth && d <= wEndInMonth
     })
     const pnl = weekTrades.reduce((sum, t) => sum + (t.netPnl ?? 0), 0)
     const tradingDays = new Set(weekTrades.map((t) => format(new Date(t.entryDate), "yyyy-MM-dd"))).size
-    weeks.push({ label: `Week ${weekNum}`, days: tradingDays, pnl })
+
+    const dateRange = isSameDay(wStartInMonth, wEndInMonth)
+      ? format(wStartInMonth, "MMM d")
+      : isSameMonth(wStartInMonth, wEndInMonth)
+      ? `${format(wStartInMonth, "MMM d")} – ${format(wEndInMonth, "d")}`
+      : `${format(wStartInMonth, "MMM d")} – ${format(wEndInMonth, "MMM d")}`
+
+    const isCurrent = isThisMonth && today >= startOfDay(wStartInMonth) && today <= endOfDay(wEndInMonth)
+
+    weeks.push({
+      label: `Week ${weekNum}`,
+      dateRange,
+      days: tradingDays,
+      pnl,
+      isCurrent,
+    })
+
     current = new Date(wEnd.getTime() + 86400000)
     weekNum++
   }
@@ -475,15 +496,16 @@ function MonthlySummary({ trades, month }: { trades: Trade[]; month: Date }) {
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Weekly Breakdown</p>
             <div className="space-y-2">
-              {weeks.map((week, i) => {
-                const cur = i === weeks.length - 1
+              {weeks.map((week) => {
+                const cur = week.isCurrent
                 const pos = week.pnl >= 0
                 return (
                   <div key={week.label} className={cn("flex items-center rounded-xl px-3 py-2.5 gap-3", cur ? "bg-violet-500/10 border border-violet-500/25" : "bg-muted/40 border border-transparent")}>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-xs font-semibold">{week.label}</span>
-                        <span className="text-[10px] text-muted-foreground">({week.days} trading days)</span>
+                        <span className="text-[11px] text-muted-foreground font-medium">· {week.dateRange}</span>
+                        <span className="text-[10px] text-muted-foreground">({week.days} {week.days === 1 ? "trading day" : "trading days"})</span>
                         {cur && <Badge variant="purple" className="text-[9px] px-1.5 py-0 h-4">Current</Badge>}
                       </div>
                     </div>
