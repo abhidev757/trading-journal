@@ -2,7 +2,8 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Plus, TrendingUp, LogOut } from "lucide-react"
+import { LayoutDashboard, Plus, LogOut } from "lucide-react"
+import { useTheme } from "next-themes"
 import { ThemeToggle } from "./theme-toggle"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -15,6 +16,7 @@ const navItems = [
 export function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
+  const { resolvedTheme } = useTheme()
   const [user, setUser] = React.useState<any>(null)
 
   const supabase = createBrowserClient(
@@ -44,9 +46,11 @@ export function Navbar() {
       <div className="flex h-14 items-center px-4 gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 mr-4">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-600">
-            <TrendingUp className="h-4 w-4 text-white" />
-          </div>
+          <img
+            src={resolvedTheme === "dark" ? "/icon-dark.png" : "/icon-light.png"}
+            alt="TradeJournal"
+            className="h-7 w-7 rounded-xl object-cover"
+          />
           <span className="font-semibold text-sm tracking-tight hidden sm:block">TradeJournal</span>
         </Link>
 

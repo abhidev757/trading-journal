@@ -12,6 +12,14 @@ export const metadata: Metadata = {
     template: "%s | TradeJournal",
   },
   description: "A professional trading journal to track trades, review emotions, and build consistency.",
+  icons: {
+    icon: [
+      { url: "/icon-dark.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/icon-light.png", media: "(prefers-color-scheme: light)" },
+      { url: "/icon-dark.png" },
+    ],
+    apple: "/icon-192.png",
+  },
 }
 
 export default function RootLayout({
