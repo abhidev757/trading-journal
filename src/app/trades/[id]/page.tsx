@@ -317,11 +317,22 @@ export default function TradeDetailPage() {
                 {/* Performance */}
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Performance</p>
-                  <InfoRow label="Risk (R)" value={trade.riskR !== undefined ? `${trade.riskR}R` : "—"} />
+                  <InfoRow
+                    label="Risk ($)"
+                    value={trade.riskR !== undefined && trade.riskR !== null ? formatCurrency(trade.riskR) : "—"}
+                  />
                   <InfoRow
                     label="Return (R)"
-                    value={trade.returnR !== undefined ? formatR(trade.returnR) : "—"}
-                    valueClass={getPnlColor(trade.returnR ?? null)}
+                    value={
+                      trade.returnR !== undefined && trade.returnR !== null
+                        ? formatR(trade.returnR)
+                        : trade.netPnl != null && trade.riskR
+                        ? formatR(trade.netPnl / trade.riskR)
+                        : "—"
+                    }
+                    valueClass={getPnlColor(
+                      trade.returnR ?? (trade.netPnl != null && trade.riskR ? trade.netPnl / trade.riskR : null)
+                    )}
                   />
                 </div>
 

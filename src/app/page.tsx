@@ -39,7 +39,10 @@ function computeStats(trades: Trade[]) {
   const losses = trades.filter((t) => (t.netPnl ?? 0) < 0)
   const totalPnl = trades.reduce((sum, t) => sum + (t.netPnl ?? 0), 0)
   const winRate = trades.length > 0 ? (wins.length / trades.length) * 100 : 0
-  const avgR = trades.length > 0 ? trades.reduce((sum, t) => sum + (t.returnR ?? 0), 0) / trades.length : 0
+  const avgR = trades.length > 0 ? trades.reduce((sum, t) => {
+    const r = t.returnR ?? (t.netPnl != null && t.riskR ? t.netPnl / t.riskR : 0)
+    return sum + r
+  }, 0) / trades.length : 0
   const avgWin = wins.length > 0 ? wins.reduce((sum, t) => sum + (t.netPnl ?? 0), 0) / wins.length : 0
   const avgLoss = losses.length > 0 ? losses.reduce((sum, t) => sum + (t.netPnl ?? 0), 0) / losses.length : 0
   const expectancy = wins.length > 0 && losses.length > 0 ? (winRate / 100) * avgWin + ((100 - winRate) / 100) * avgLoss : 0
@@ -84,7 +87,10 @@ function getRDistribution(trades: Trade[]) {
   ]
   return buckets.map((b) => ({
     label: b.label,
-    count: trades.filter((t) => (t.returnR ?? 0) > b.min && (t.returnR ?? 0) <= b.max).length,
+    count: trades.filter((t) => {
+      const r = t.returnR ?? (t.netPnl != null && t.riskR ? t.netPnl / t.riskR : 0)
+      return r > b.min && r <= b.max
+    }).length,
   }))
 }
 

@@ -67,7 +67,11 @@ export async function POST(req: Request) {
         fees: tradeData.fees ? parseFloat(tradeData.fees) : 0,
         swap: tradeData.swap ? parseFloat(tradeData.swap) : 0,
         riskR: tradeData.riskR ? parseFloat(tradeData.riskR) : null,
-        returnR: tradeData.returnR ? parseFloat(tradeData.returnR) : null,
+        returnR: tradeData.returnR
+          ? parseFloat(tradeData.returnR)
+          : (tradeData.netPnl && tradeData.riskR && parseFloat(tradeData.riskR) !== 0)
+            ? parseFloat((parseFloat(tradeData.netPnl) / parseFloat(tradeData.riskR)).toFixed(2))
+            : null,
         legs: {
           create: legs?.map((leg: any, i: number) => ({
             ...leg,

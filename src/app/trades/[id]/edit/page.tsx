@@ -238,6 +238,18 @@ export default function EditTradePage() {
   const { fields: legFields, append: appendLeg, remove: removeLeg } = useFieldArray({ control, name: "legs" })
 
   const planFollowed = watch("planFollowed")
+  const watchPnl = watch("netPnl")
+  const watchRisk = watch("riskR")
+
+  React.useEffect(() => {
+    if (watchPnl && watchRisk) {
+      const pnlNum = parseFloat(watchPnl)
+      const riskNum = parseFloat(watchRisk)
+      if (!isNaN(pnlNum) && !isNaN(riskNum) && riskNum > 0) {
+        setValue("returnR", (pnlNum / riskNum).toFixed(2))
+      }
+    }
+  }, [watchPnl, watchRisk, setValue])
 
   const uploadFile = async (file: File, tradeId: string, timeframe: string) => {
     const formData = new FormData()
@@ -495,12 +507,14 @@ export default function EditTradePage() {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Performance</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <Label htmlFor="riskR">Risk (R)</Label>
+                        <Label htmlFor="riskR">Risk ($)</Label>
                         <Input id="riskR" type="number" step="0.01" placeholder="$0.00" {...register("riskR")} />
+                        <p className="text-[11px] text-muted-foreground">The dollar amount you risked on this trade.</p>
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor="returnR">Return (R)</Label>
-                        <Input id="returnR" type="number" step="0.01" placeholder="0.0R" {...register("returnR")} />
+                        <Label htmlFor="returnR">Return (R-Multiple)</Label>
+                        <Input id="returnR" type="number" step="0.01" placeholder="e.g. 2.50" {...register("returnR")} />
+                        <p className="text-[11px] text-muted-foreground">Auto-calculated as PnL ÷ Risk (or enter manually).</p>
                       </div>
                     </div>
                   </div>
