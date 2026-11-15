@@ -49,7 +49,7 @@ export function Navbar() {
           <img
             src={resolvedTheme === "dark" ? "/icon-dark.png" : "/icon-light.png"}
             alt="TradeJournal"
-            className="h-7 w-7 rounded-xl object-cover"
+            className="h-10 w-10 rounded-xl object-cover"
           />
           <span className="font-semibold text-sm tracking-tight hidden sm:block">TradeJournal</span>
         </Link>
