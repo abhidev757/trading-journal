@@ -47,7 +47,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 mr-4">
           <img
-            src={resolvedTheme === "dark" ? "/icon-dark.png" : "/icon-light.png"}
+            src={resolvedTheme === "dark" ? "/icon-light.png" : "/icon-dark.png"}
             alt="TradeJournal"
             className="h-12 w-12 rounded-xl object-cover"
           />
