@@ -45,11 +45,11 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
       <div className="flex h-14 items-center px-4 gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 mr-4">
+        <Link href="/" className="flex items-center gap-2 mr-4">
           <img
             src={resolvedTheme === "dark" ? "/icon-dark.png" : "/icon-light.png"}
             alt="TradeJournal"
-            className="h-10 w-10 rounded-xl object-cover"
+            className="h-12 w-12 rounded-xl object-cover"
           />
           <span className="font-semibold text-sm tracking-tight hidden sm:block">TradeJournal</span>
         </Link>
