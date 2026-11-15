@@ -10,7 +10,8 @@ import { Separator } from "@/components/ui/separator"
 import { cn, formatCurrency, getPnlColor, formatR } from "@/lib/utils"
 import { EMOTION_EMOJI, EMOTION_COLORS } from "@/lib/constants"
 import { InstrumentIcon } from "@/components/ui/instrument-icon"
-import { DEMO_TRADES, type DemoTrade } from "@/lib/demo-data"
+import { Skeleton } from "@/components/ui/skeleton"
+import { type DemoTrade } from "@/lib/demo-data"
 import Link from "next/link"
 
 type Trade = DemoTrade
@@ -85,18 +86,80 @@ export default function TradeDetailPage() {
         setTrade(apiTrade)
         setLoading(false)
       })
-      .catch(() => {
-        // Fallback to demo data — find by ID or use first demo trade
-        const demo = DEMO_TRADES.find((t) => t.id === id) ?? DEMO_TRADES[0]
-        setTrade(demo)
+      .catch((err) => {
+        console.error(err)
+        setTrade(null)
         setLoading(false)
       })
   }, [id])
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-violet-600 border-t-transparent" />
+      <div className="min-h-screen bg-muted/20 pb-20">
+        <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-9 w-24 rounded-lg" />
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <div className="space-y-1.5">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-3 w-36" />
+              </div>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <Skeleton className="h-9 w-20 rounded-lg" />
+              <Skeleton className="h-9 w-20 rounded-lg" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-5">
+              <Card>
+                <CardContent className="pt-6 space-y-5">
+                  <div className="space-y-2">
+                    <Skeleton className="h-10 w-32" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Separator />
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <div key={i} className="space-y-1.5">
+                        <Skeleton className="h-5 w-20" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <Skeleton className="h-5 w-28" />
+                  <div className="space-y-2">
+                    {[1, 2].map((i) => (
+                      <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="space-y-5">
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <Skeleton className="h-5 w-32" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Skeleton className="h-16 w-full rounded-xl" />
+                    <Skeleton className="h-16 w-full rounded-xl" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-48 w-full rounded-xl" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

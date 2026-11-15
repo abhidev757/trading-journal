@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge"
 import { cn, formatCurrency, getPnlColor, getDayBgColor, formatPercent } from "@/lib/utils"
 import { EMOTION_EMOJI } from "@/lib/constants"
 import { InstrumentIcon } from "@/components/ui/instrument-icon"
+import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-import { DEMO_TRADES, type DemoTrade } from "@/lib/demo-data"
+import { type DemoTrade } from "@/lib/demo-data"
 type Trade = DemoTrade
 
 interface DayData {
@@ -136,7 +137,7 @@ function DayCell({ day, dayData, isCurrentMonth, selectedDate, onSelect }: {
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 
-function Sidebar({ selectedDate, trades }: { selectedDate: Date | null; trades: Trade[] }) {
+function Sidebar({ selectedDate, trades, loading }: { selectedDate: Date | null; trades: Trade[]; loading?: boolean }) {
   const [isOpen, setIsOpen] = React.useState(false)
   const touchStartY = React.useRef<number | null>(null)
   const asideRef = React.useRef<HTMLElement | null>(null)
@@ -250,9 +251,13 @@ function Sidebar({ selectedDate, trades }: { selectedDate: Date | null; trades: 
               )}
             </span>
           </div>
-          <div className={cn("text-3xl font-bold tracking-tight", getPnlColor(dayPnl))}>
-            {formatCurrency(dayPnl)}
-          </div>
+          {loading ? (
+            <Skeleton className="h-8 w-32 my-0.5" />
+          ) : (
+            <div className={cn("text-3xl font-bold tracking-tight", getPnlColor(dayPnl))}>
+              {formatCurrency(dayPnl)}
+            </div>
+          )}
           <p className="text-xs text-muted-foreground mt-0.5 uppercase tracking-wide">Net PNL</p>
         </div>
       </div>
@@ -261,26 +266,46 @@ function Sidebar({ selectedDate, trades }: { selectedDate: Date | null; trades: 
         {/* KPIs */}
         <div className="p-4 border-b grid grid-cols-2 gap-3">
           <div>
-            <p className="text-lg font-bold">{formatPercent(stats.winRate)}</p>
+            {loading ? (
+              <Skeleton className="h-6 w-16 mb-1" />
+            ) : (
+              <p className="text-lg font-bold">{formatPercent(stats.winRate)}</p>
+            )}
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Win Rate</p>
           </div>
           <div>
-            <p className={cn("text-lg font-bold", getPnlColor(stats.avgR))}>
-              {stats.avgR >= 0 ? "+" : ""}{stats.avgR.toFixed(2)}R
-            </p>
+            {loading ? (
+              <Skeleton className="h-6 w-16 mb-1" />
+            ) : (
+              <p className={cn("text-lg font-bold", getPnlColor(stats.avgR))}>
+                {stats.avgR >= 0 ? "+" : ""}{stats.avgR.toFixed(2)}R
+              </p>
+            )}
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Average R</p>
           </div>
           <div>
-            <p className="text-lg font-bold">{dayTrades.length} <span className="text-muted-foreground text-sm">/ {dayTrades.length}</span></p>
+            {loading ? (
+              <Skeleton className="h-6 w-16 mb-1" />
+            ) : (
+              <p className="text-lg font-bold">{dayTrades.length} <span className="text-muted-foreground text-sm">/ {dayTrades.length}</span></p>
+            )}
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Trades</p>
           </div>
           <div className="flex gap-3">
             <div>
-              <p className="text-lg font-bold text-emerald-600">{stats.wins}</p>
+              {loading ? (
+                <Skeleton className="h-6 w-8 mb-1" />
+              ) : (
+                <p className="text-lg font-bold text-emerald-600">{stats.wins}</p>
+              )}
               <p className="text-xs text-muted-foreground uppercase tracking-wide">Wins</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-red-500">{stats.losses}</p>
+              {loading ? (
+                <Skeleton className="h-6 w-8 mb-1" />
+              ) : (
+                <p className="text-lg font-bold text-red-500">{stats.losses}</p>
+              )}
               <p className="text-xs text-muted-foreground uppercase tracking-wide">Losses</p>
             </div>
           </div>
@@ -290,7 +315,7 @@ function Sidebar({ selectedDate, trades }: { selectedDate: Date | null; trades: 
         <div className="flex-1 p-4">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Trades</p>
-            <p className="text-[10px] text-muted-foreground">Tap to see details</p>
+            <p className="text-[10px] text-muted-foreground">{loading ? "Loading..." : "Tap to see details"}</p>
           </div>
           <div className="flex gap-1 mb-3">
             {["All", "Wins", "Losses"].map((f) => (
@@ -300,7 +325,23 @@ function Sidebar({ selectedDate, trades }: { selectedDate: Date | null; trades: 
               )}>{f}</button>
             ))}
           </div>
-          {dayTrades.length === 0 ? (
+          {loading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-border/40 p-3 bg-muted/10">
+                  <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-3.5 w-10 rounded-full" />
+                    </div>
+                    <Skeleton className="h-2.5 w-12" />
+                  </div>
+                  <Skeleton className="h-4 w-14" />
+                </div>
+              ))}
+            </div>
+          ) : dayTrades.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
                 <Target className="h-5 w-5 text-muted-foreground" />
@@ -445,12 +486,83 @@ function MonthlySummary({ trades, month }: { trades: Trade[]; month: Date }) {
   )
 }
 
+// ─── Skeletons ───────────────────────────────────────────────────────────────
+
+function CalendarSkeletonGrid() {
+  return (
+    <div className="grid grid-cols-7 gap-2">
+      {Array.from({ length: 35 }).map((_, i) => (
+        <div
+          key={i}
+          className="min-h-[80px] w-full rounded-xl border border-muted/40 p-2 bg-card flex flex-col justify-between"
+        >
+          <Skeleton className="h-5 w-5 rounded-full" />
+          <div className="space-y-1.5 mt-2">
+            <Skeleton className="h-2.5 w-10" />
+            <Skeleton className="h-3.5 w-14" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function MonthlySummarySkeleton({ month }: { month: Date }) {
+  return (
+    <div className="border-t bg-card">
+      <div className="px-4 sm:px-6 pt-5 pb-3 flex items-center gap-2">
+        <span className="w-1.5 h-5 rounded-full bg-violet-500/40 shrink-0" />
+        <h3 className="font-bold text-base tracking-tight">Monthly Summary</h3>
+        <span className="ml-auto text-xs text-muted-foreground">{format(month, "MMMM yyyy")}</span>
+      </div>
+
+      <div className="px-4 sm:px-6 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-3 gap-2">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="rounded-2xl border p-3 flex flex-col gap-2 bg-muted/15 border-border/50">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-2.5 w-14" />
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">R-Distribution</p>
+            <Skeleton className="h-32 lg:h-40 w-full rounded-xl" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-3 gap-2">
+            {[3, 4, 5].map((i) => (
+              <div key={i} className="rounded-2xl border p-3 flex flex-col gap-2 bg-muted/15 border-border/50">
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-2.5 w-14" />
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Weekly Breakdown</p>
+            <div className="space-y-2">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Dashboard Page ──────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const [month, setMonth] = React.useState(new Date()) // Current month
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(new Date())
-  const [trades, setTrades] = React.useState<Trade[]>(DEMO_TRADES)
+  const [trades, setTrades] = React.useState<Trade[]>([])
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
@@ -462,18 +574,11 @@ export default function DashboardPage() {
         return r.json()
       })
       .then((data) => {
-        if (data.trades && data.trades.length > 0) {
-          setTrades(data.trades)
-        } else {
-          // If no trades, empty array or keep demo? Let's use empty array if API connected but empty.
-          // Wait, if no trades, we should probably set empty array to show "No trades". 
-          // But if API error (unauthorized/no db), we fall back to DEMO_TRADES in catch.
-          setTrades(data.trades || [])
-        }
+        setTrades(data.trades || [])
       })
       .catch((e) => {
         console.error(e)
-        setTrades(DEMO_TRADES) // Fallback to demo data
+        setTrades([])
       })
       .finally(() => setLoading(false))
   }, [month])
@@ -515,33 +620,41 @@ export default function DashboardPage() {
               ))}
             </div>
             {/* Day cells */}
-            <div className="grid grid-cols-7 gap-2">
-              {calendarDays.map((day) => {
-                const key = format(day, "yyyy-MM-dd")
-                const dayTrades = dayMap.get(key) || []
-                const pnl = dayTrades.reduce((sum, t) => sum + (t.netPnl ?? 0), 0)
-                return (
-                  <DayCell
-                    key={key}
-                    day={day}
-                    dayData={dayTrades.length > 0 ? { date: day, trades: dayTrades, pnl } : undefined}
-                    isCurrentMonth={isSameMonth(day, month)}
-                    selectedDate={selectedDate}
-                    onSelect={setSelectedDate}
-                  />
-                )
-              })}
-            </div>
+            {loading ? (
+              <CalendarSkeletonGrid />
+            ) : (
+              <div className="grid grid-cols-7 gap-2">
+                {calendarDays.map((day) => {
+                  const key = format(day, "yyyy-MM-dd")
+                  const dayTrades = dayMap.get(key) || []
+                  const pnl = dayTrades.reduce((sum, t) => sum + (t.netPnl ?? 0), 0)
+                  return (
+                    <DayCell
+                      key={key}
+                      day={day}
+                      dayData={dayTrades.length > 0 ? { date: day, trades: dayTrades, pnl } : undefined}
+                      isCurrentMonth={isSameMonth(day, month)}
+                      selectedDate={selectedDate}
+                      onSelect={setSelectedDate}
+                    />
+                  )
+                })}
+              </div>
+            )}
           </div>
           </div>
 
           {/* Monthly summary section */}
-          <MonthlySummary trades={trades} month={month} />
+          {loading ? (
+            <MonthlySummarySkeleton month={month} />
+          ) : (
+            <MonthlySummary trades={trades} month={month} />
+          )}
         </div>
       </div>
 
       {/* Right sidebar */}
-      <Sidebar selectedDate={selectedDate} trades={trades} />
+      <Sidebar selectedDate={selectedDate} trades={trades} loading={loading} />
     </div>
   )
 }
