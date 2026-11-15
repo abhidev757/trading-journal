@@ -6,6 +6,15 @@ export async function proxy(request: NextRequest) {
     request,
   })
 
+  const { pathname } = request.nextUrl
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/auth')
+  const isApiRoute = pathname.startsWith('/api')
+
+  // API routes handle their own authentication. Skipping proxy getUser saves a redundant round-trip.
+  if (isApiRoute) {
+    return supabaseResponse
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -31,10 +40,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/auth')
-  const isApiRoute = request.nextUrl.pathname.startsWith('/api')
-
-  if (!user && !isAuthRoute && !isApiRoute && request.nextUrl.pathname !== '/login') {
+  if (!user && !isAuthRoute && pathname !== '/login') {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
