@@ -82,3 +82,17 @@
   transition-duration: 150ms;
   transition-timing-function: ease;
 }
+
+/* Custom ReactCrop styling for MT5 screenshot cropping */
+.ReactCrop__crop-selection {
+  border: 2px solid #8b5cf6 !important;
+  box-shadow: 0 0 0 9999em rgba(0, 0, 0, 0.7) !important;
+}
+.ReactCrop__handle {
+  background-color: #8b5cf6 !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 4px !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+

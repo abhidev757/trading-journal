@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation"
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Plus, Trash2, Upload, X, ChevronLeft, Save, ImageIcon, Loader2 } from "lucide-react"
+import { Plus, Trash2, Upload, X, ChevronLeft, Save, ImageIcon, Loader2, Sparkles, AlertCircle, CheckCircle2 } from "lucide-react"
+import { extractTradeFromScreenshot } from "@/lib/mt5-parser"
+import { ImageCropModal } from "@/components/trades/image-crop-modal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -174,6 +176,134 @@ export default function EditTradePage() {
   const [entryConfluences, setEntryConfluences] = React.useState<string[]>([])
   const [mistakes, setMistakes] = React.useState<string[]>([])
 
+  // MT5 Screenshot Extraction state
+  const [isExtracting, setIsExtracting] = React.useState(false)
+  const [extractProgress, setExtractProgress] = React.useState<number | null>(null)
+  const [extractSuccess, setExtractSuccess] = React.useState<string | null>(null)
+  const [extractError, setExtractError] = React.useState<string | null>(null)
+  const [isDragOver, setIsDragOver] = React.useState(false)
+  const [pendingCropFile, setPendingCropFile] = React.useState<File | null>(null)
+  const [isCropOpen, setIsCropOpen] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const handleSelectScreenshot = (file: File) => {
+    setPendingCropFile(file)
+    setIsCropOpen(true)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const processScreenshot = async (file: File) => {
+    setIsExtracting(true)
+    setExtractProgress(0)
+    setExtractSuccess(null)
+    setExtractError(null)
+
+    try {
+      const extracted = await extractTradeFromScreenshot(file, (p) => {
+        setExtractProgress(p)
+      })
+
+      let count = 0
+      if (extracted.instrument) {
+        setValue("instrument", extracted.instrument)
+        count++
+      }
+      if (extracted.direction) {
+        setValue("direction", extracted.direction)
+        count++
+      }
+      if (extracted.lotSize) {
+        setValue("lotSize", extracted.lotSize)
+        count++
+      }
+      if (extracted.entryDate) {
+        setValue("entryDate", extracted.entryDate)
+        count++
+      }
+      if (extracted.entryTime) {
+        setValue("entryTime", extracted.entryTime)
+        count++
+      }
+      if (extracted.exitDate) {
+        setValue("exitDate", extracted.exitDate)
+        count++
+      }
+      if (extracted.exitTime) {
+        setValue("exitTime", extracted.exitTime)
+        count++
+      }
+      if (extracted.entryPrice) {
+        setValue("entryPrice", extracted.entryPrice)
+        count++
+      }
+      if (extracted.exitPrice) {
+        setValue("exitPrice", extracted.exitPrice)
+        count++
+      }
+      if (extracted.stopLoss) {
+        setValue("stopLoss", extracted.stopLoss)
+        count++
+      }
+      if (extracted.takeProfit) {
+        setValue("takeProfit", extracted.takeProfit)
+        count++
+      }
+      if (extracted.netPnl) {
+        setValue("netPnl", extracted.netPnl)
+        count++
+      }
+      if (extracted.fees) {
+        setValue("fees", extracted.fees)
+        count++
+      }
+      if (extracted.swap) {
+        setValue("swap", extracted.swap)
+        count++
+      }
+
+      // Auto-attach this screenshot as the Lower Timeframe (LTF) chart
+      setLtfFile(file)
+
+      if (count > 0) {
+        setExtractSuccess(`Auto-filled ${count} fields from MT5 screenshot!`)
+      } else {
+        setExtractError("Could not detect trade details. Please make sure the screenshot is clear.")
+      }
+    } catch (err) {
+      console.error("Screenshot OCR error:", err)
+      setExtractError("Failed to read image. Please try another screenshot.")
+    } finally {
+      setIsExtracting(false)
+    }
+  }
+
+  // Handle global paste (Ctrl+V)
+  React.useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile()
+          if (file) {
+            handleSelectScreenshot(file)
+            break
+          }
+        }
+      }
+    }
+    window.addEventListener("paste", handlePaste)
+    return () => window.removeEventListener("paste", handlePaste)
+  }, [])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleSelectScreenshot(e.target.files[0])
+    }
+  }
+
   const { register, handleSubmit, watch, setValue, control, reset, formState: { errors } } = useForm<TradeFormValues>({
     resolver: zodResolver(tradeSchema),
     defaultValues: {
@@ -336,6 +466,147 @@ export default function EditTradePage() {
               <p className="text-xs text-muted-foreground">Update your trade</p>
             </div>
           </div>
+        </div>
+
+        {/* ── MT5 Screenshot Auto-Fill Banner ── */}
+        <ImageCropModal
+          open={isCropOpen}
+          file={pendingCropFile}
+          onClose={() => {
+            setIsCropOpen(false)
+            setPendingCropFile(null)
+          }}
+          onConfirm={(croppedFile) => {
+            setIsCropOpen(false)
+            setPendingCropFile(null)
+            processScreenshot(croppedFile)
+          }}
+        />
+
+        <div
+          onDragOver={(e) => {
+            e.preventDefault()
+            setIsDragOver(true)
+          }}
+          onDragLeave={() => setIsDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault()
+            setIsDragOver(false)
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+              const file = e.dataTransfer.files[0]
+              if (file.type.startsWith("image/")) {
+                handleSelectScreenshot(file)
+              }
+            }
+          }}
+          className={cn(
+            "mb-5 sm:mb-6 rounded-xl sm:rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-transparent p-3.5 sm:p-5 relative transition-all duration-200",
+            isDragOver && "border-violet-500 bg-violet-500/20 shadow-lg ring-2 ring-violet-500/40"
+          )}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="flex items-start sm:items-center gap-3 min-w-0">
+              <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-violet-600/20 text-violet-400 flex items-center justify-center shrink-0 border border-violet-500/30 mt-0.5 sm:mt-0">
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm sm:text-base font-semibold text-foreground tracking-tight">
+                    Auto-fill from MT5 Screenshot
+                  </h3>
+                  <Badge variant="purple" className="text-[10px] px-1.5 py-0 h-4 font-normal shrink-0">
+                    AI OCR
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  <span className="sm:hidden">Upload your trade screenshot to update fields automatically.</span>
+                  <span className="hidden sm:inline">
+                    Upload, drag & drop, or paste (<kbd className="px-1 py-0.5 bg-muted rounded border text-[10px] font-mono">Ctrl+V</kbd>) an MT5 screenshot to update fields automatically.
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isExtracting}
+                className="w-full sm:w-auto border-violet-500/40 bg-violet-500/10 hover:bg-violet-500/20 hover:border-violet-400 text-violet-200 font-medium text-xs sm:text-sm h-9 sm:h-9 px-3.5 gap-2 shadow-sm transition-all"
+              >
+                {isExtracting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-violet-400" />
+                    <span>{extractProgress ? `Scanning ${extractProgress}%` : "Extracting..."}</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 text-violet-400" />
+                    <span>Upload MT5 Screenshot</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Extraction Progress Bar */}
+          {isExtracting && (
+            <div className="mt-3 pt-2.5 border-t border-violet-500/20 space-y-1.5">
+              <div className="flex justify-between text-[11px] text-violet-300">
+                <span className="flex items-center gap-1.5">
+                  <Loader2 className="h-3 w-3 animate-spin text-violet-400" />
+                  Reading trade details...
+                </span>
+                <span>{extractProgress ?? 0}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-violet-950/40 rounded-full overflow-hidden border border-violet-500/20">
+                <div
+                  className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all duration-200"
+                  style={{ width: `${Math.max(extractProgress ?? 0, 8)}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {extractSuccess && (
+            <div className="mt-3 pt-2.5 border-t border-violet-500/20 flex items-center justify-between text-xs text-emerald-400">
+              <span className="flex items-center gap-1.5 font-medium min-w-0">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                <span className="truncate sm:whitespace-normal">{extractSuccess}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setExtractSuccess(null)}
+                className="text-muted-foreground hover:text-foreground text-[11px] underline shrink-0 ml-2"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {extractError && (
+            <div className="mt-3 pt-2.5 border-t border-red-500/20 flex items-center justify-between text-xs text-red-400">
+              <span className="flex items-center gap-1.5 font-medium min-w-0">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0 text-red-400" />
+                <span className="truncate sm:whitespace-normal">{extractError}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setExtractError(null)}
+                className="text-muted-foreground hover:text-foreground text-[11px] underline shrink-0 ml-2"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
